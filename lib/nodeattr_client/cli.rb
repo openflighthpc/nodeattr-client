@@ -104,6 +104,28 @@ module NodeattrClient
       c.summary = 'List all the nodes'
       action(c, Commands::Node, method: :list)
     end
+
+    command 'node' do |c|
+      cli_syntax(c)
+      c.sub_command_group = true
+      c.summary = 'Preform an action on a single node'
+    end
+
+    command 'node show' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Retreive the record about a single node'
+      c.option '--cluster CLUSTER',
+               'Toggle the ID to be node name within the given cluster'
+      action(c, Commands::Node, method: :show)
+    end
+
+    command 'node update' do |c|
+      cli_syntax(c, 'ID KEY=VALUE...')
+      c.summary = 'Update the parameters for a node'
+      c.option '--cluster CLUSTER',
+               'Toggle the ID to be node name within the given cluster'
+      action(c, Commands::Node, method: :update)
+    end
   end
 end
 

@@ -36,6 +36,27 @@ module NodeattrClient
         end
         puts node_str
       end
+
+      def show(id, cluster: nil)
+        pp find(id, cluster)
+      end
+
+      def update(id, *params, cluster: nil)
+        node = find(id, cluster)
+        hash = params.select { |p| p.include?('=') }
+                     .map { |s| s.split('=', 2) }
+                     .to_h
+                     .symbolize_keys
+        node.update params: node.params.merge(hash)
+        pp node
+      end
+
+      private
+
+      def find(id_or_name, cluster)
+        id = cluster ? "#{cluster}.#{id_or_name}" : id_or_name
+        Records::Node.find(id).first
+      end
     end
   end
 end
