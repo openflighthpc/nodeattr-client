@@ -30,3 +30,80 @@
 require 'commander'
 require 'nodeattr_client/records'
 
+require 'nodeattr_client/commands/node'
+
+module NodeattrClient
+  VERSION = '0.0.1'
+
+  class CLI
+    extend Commander::Delegates
+
+    program :name, 'flightattr'
+    program :version, NodeattrClient::VERSION
+    program :description, 'Query for node attributes and grouping'
+    program :help_paging, false
+
+    silent_trace!
+
+    def self.run!
+      ARGV.push '--help' if ARGV.empty?
+      super
+    end
+
+    def self.action(command, klass, method: :run!)
+      command.action do |args, options|
+        hash = options.__hash__
+        hash.delete(:trace)
+        begin
+          begin
+            cmd = klass.new
+            if hash.empty?
+              cmd.public_send(method, *args)
+            else
+              cmd.public_send(method, *args, **hash)
+            end
+          rescue Interrupt
+            raise RuntimeError, 'Received Interrupt!'
+          end
+        rescue StandardError => e
+          new_error_class = case e
+                            when JsonApiClient::Errors::ClientError
+                              ClientError
+                            when JsonApiClient::Errors::ServerError
+                              InternalServerError
+                            else
+                              nil
+                            end
+          if new_error_class && e.env.response_headers['content-type'] == 'application/vnd.api+json'
+            raise new_error_class, <<~MESSAGE.chomp
+              #{e.message}
+              #{e.env.body['errors'].map do |e| e['detail'] end.join("\n\n")}
+            MESSAGE
+          else
+            raise e
+          end
+        end
+      end
+    end
+
+    def self.cli_syntax(command, args_str = '')
+      command.hidden = true if command.name.split.length > 1
+      command.syntax = <<~SYNTAX.chomp
+        #{program(:name)} #{command.name} #{args_str}
+      SYNTAX
+    end
+
+    command 'nodes' do |c|
+      cli_syntax(c)
+      c.sub_command_group = true
+      c.summary = 'Preform an action on multiple nodes'
+    end
+
+    command 'nodes list' do |c|
+      cli_syntax(c)
+      c.summary = 'List all the nodes'
+      action(c, Commands::Node, method: :list)
+    end
+  end
+end
+
