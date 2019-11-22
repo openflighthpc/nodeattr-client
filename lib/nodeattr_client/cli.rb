@@ -27,18 +27,6 @@
 # https://github.com/openflighthpc/nodeattr-client
 #===============================================================================
 
-source "https://rubygems.org"
-
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
-
-gem 'activesupport'
-gem 'commander-openflighthpc'
-gem 'json_api_client'
-gem 'hashie'
-gem 'tty-table'
-
-group :development do
-  gem 'pry'
-  gem 'pry-byebug'
-end
+require 'commander'
+require 'nodeattr_client/records'
 

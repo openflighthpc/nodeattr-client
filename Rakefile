@@ -34,6 +34,9 @@ task :setup do
   require 'rubygems'
   require 'bundler/setup'
 
+  require 'active_support/core_ext/string'
+  require 'active_support/core_ext/module'
+
   require 'pry'
   require 'pry-byebug'
 end

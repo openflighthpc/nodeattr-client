@@ -27,18 +27,27 @@
 # https://github.com/openflighthpc/nodeattr-client
 #===============================================================================
 
-source "https://rubygems.org"
+require 'json_api_client'
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+module NodeattrClient
+  module Records
+    class Base < JsonApiClient::Resource
+      # TODO: Make this a config value
+      self.site = "http://localhost:8080"
+    end
 
-gem 'activesupport'
-gem 'commander-openflighthpc'
-gem 'json_api_client'
-gem 'hashie'
-gem 'tty-table'
+    class Node < Base
+      property :name, type: :string
+      property :params, type: :hash
+    end
 
-group :development do
-  gem 'pry'
-  gem 'pry-byebug'
+    class Group < Base
+      property :name, type: :string
+    end
+
+    class Cluster < Base
+      property :name, type: :string
+    end
+  end
 end
 
