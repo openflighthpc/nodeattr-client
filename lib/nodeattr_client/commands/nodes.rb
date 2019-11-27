@@ -32,6 +32,10 @@ module NodeattrClient
     class Nodes
       include Concerns::HasParamParser
 
+      def list_groups(id_or_name, cluster: nil)
+        Commands::Groups.new.list(cluster: cluster, node: id_or_name)
+      end
+
       def list(cluster: nil, cluster_id: nil, group: nil)
         records = if group
                     id = (cluster ? "#{cluster}.#{group}" : group)

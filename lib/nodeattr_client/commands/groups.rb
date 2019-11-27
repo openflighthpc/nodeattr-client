@@ -34,19 +34,24 @@ module NodeattrClient
 
       UPDATE_FLAGS = [:add_nodes]
 
-      def list
-        group_str = Records::Group.includes(:cluster).all.map do |n|
-          "#{n.id}: #{n.cluster&.name}.#{n.name}"
-        end
-        puts group_str
+      def list_nodes(id_or_name, cluster: nil)
+        Commands::Nodes.new.list(cluster: cluster, group: id_or_name)
       end
 
-      def list_nodes(id_or_name, cluster: nil)
-        if cluster
-          Commands::Nodes.new.list(cluster: cluster, group: id_or_name)
-        else
-          Commands::Nodes.new.list(group: id_or_name)
+      def list(cluster: nil, cluster_id: nil, node: nil)
+        records = if node
+                    id = (cluster ? "#{cluster}.#{node}" : node)
+                    Records::Group.where(node_id: id).includes(:cluster).all
+                  elsif cluster || cluster_id
+                    id = (cluster ? ".#{cluster}" : cluster_id)
+                    Records::Group.where(cluster_id: id).includes(:cluster).all
+                  else
+                    Records::Group.includes(:cluster).all
+                  end
+        group_str = records.map do |group|
+          "#{group.id}: #{group.cluster&.name}.#{group.name}"
         end
+        puts group_str
       end
 
       def show(id, cluster: nil)

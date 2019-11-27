@@ -184,18 +184,27 @@ module NodeattrClient
       end
     end
 
-    command 'cluster list-nodes' do |c|
-      cli_syntax(c, 'ID')
-      c.summary = 'Return all the nodes within the cluster'
-      NAME_OPT.call(c)
-      action(c, Commands::Clusters, method: :list_nodes)
+    ['nodes', 'groups'].each do |plural|
+      command "cluster list-#{plural}" do |c|
+        cli_syntax(c, 'ID')
+        c.summary = "Return all the #{plural} within the cluster"
+        NAME_OPT.call(c)
+        action(c, Commands::Clusters, method: :"list_#{plural}")
+      end
     end
 
     command 'group list-nodes' do |c|
       cli_syntax(c, 'ID')
-      c.summary = 'Return al the nodes withn the group'
+      c.summary = 'Return all the nodes within the group'
       CLUSTER_OPT.call(c)
       action(c, Commands::Groups, method: :list_nodes)
+    end
+
+    command 'node list-groups' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Return the groups of which a node is a member'
+      CLUSTER_OPT.call(c)
+      action(c, Commands::Nodes, method: :list_groups)
     end
 
     #  case type

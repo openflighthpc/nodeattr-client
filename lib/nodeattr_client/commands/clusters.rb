@@ -40,6 +40,14 @@ module NodeattrClient
         end
       end
 
+      def list_groups(id_or_name, name: false)
+        if name
+          Groups.new.list(cluster: id_or_name)
+        else
+          Groups.new.list(cluster_id: id_or_name)
+        end
+      end
+
       def list
         cluster_strs = Records::Cluster.all.map do |c|
           "#{c.id}: #{c.name}"
