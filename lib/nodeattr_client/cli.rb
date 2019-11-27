@@ -98,112 +98,136 @@ module NodeattrClient
       SYNTAX
     end
 
-    {
-      'node' => Commands::Nodes,
-      'group' => Commands::Groups
-    }.each do |type, klass|
-      plural = type.pluralize
-      cluster_opt = ->(c, required: false, ids: nil) do
-        c.option '--cluster CLUSTER', <<~DESC.squish
-          #{'[REQUIED]' if required}
-          Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
-          within the CLUSTER
-        DESC
-      end
-
-
-      command plural do |c|
-        cli_syntax(c)
-        c.sub_command_group = true
-        c.summary = "Manage the #{type} records"
-      end
-
-      command "#{plural} list" do |c|
-        cli_syntax(c)
-        c.summary = "List all the #{plural}"
-        action(c, klass, method: :list)
-      end
-
-      command "#{plural} show" do |c|
-        cli_syntax(c, 'ID')
-        c.summary = "Retreive the record for a single #{type}"
-        cluster_opt.call(c)
-        action(c, klass, method: :show)
-      end
-
-      command "#{plural} create" do |c|
-        cli_syntax(c, 'NAME [KEY=VALUE...]')
-        c.summary = "Create a new #{type} within a cluster"
-        cluster_opt.call(c, required: true)
-        action(c, klass, method: :create)
-      end
-
-      command "#{plural} delete" do |c|
-        cli_syntax(c, 'ID')
-        c.summary = "Permanently delete the #{type}"
-        cluster_opt.call(c)
-        action(c, klass, method: :delete)
-      end
-
-      case type
-      when 'node'
-        command "#{plural} update" do |c|
-          cli_syntax(c, 'ID KEY=VALUE...')
-          c.summary = "Modify the parameters for a #{type}"
-          cluster_opt.call(c)
-          action(c, klass, method: :update)
-        end
-      when 'group'
-        command "#{plural} update" do |c|
-          cli_syntax(c, 'GROUP_ID [key=value...]')
-          c.summary = "Modify group parameters and node membership"
-          cluster_opt.call(c, ids: "GROUP_ID, NODE_ID1, NODE_ID2, and etc")
-          c.option '--add-nodes NODE_ID1,NODE_ID2,..."',
-                   'A comma seperated list of node IDs that will be assign to the group'
-          action(c, klass, method: :update)
-        end
-      end
-    end
-
-    command 'clusters' do |c|
+    command 'list' do |c|
       cli_syntax(c)
-      c.summary = 'Manage the cluster resources'
+      c.summary = 'Return a list of resources'
       c.sub_command_group = true
     end
 
-    command 'clusters list' do |c|
+    command 'list clusters' do |c|
       cli_syntax(c)
-      c.summary = 'List all the clusters'
+      c.summary = 'Return all the clusters'
       action(c, Commands::Clusters, method: :list)
     end
 
-    command 'clusters show' do |c|
-      cli_syntax(c, 'ID')
-      c.summary = 'Retrieve a single cluster record'
-      c.option '-n', '--name', 'Find the record by name instead of ID'
-      action(c, Commands::Clusters, method: :show)
+    command 'list groups' do |c|
+      cli_syntax(c)
+      c.summary = 'Return all the groups'
+      action(c, Commands::Groups, method: :list)
     end
 
-    command 'clusters create' do |c|
-      cli_syntax(c, 'NAME [KEY=VALUE...]')
-      c.summary = 'Add a new cluster entry'
-      c.option '-n', '--name', 'noop'
-      action(c, Commands::Clusters, method: :create)
+    command 'list nodes' do |c|
+      cli_syntax(c)
+      c.summary = 'Return all the nodes'
+      action(c, Commands::Nodes, method: :list)
     end
 
-    command 'clusters update' do |c|
-      cli_syntax(c, 'ID [KEY=VALUE...]')
-      c.summary = "Modify the parameters for an existing cluster"
-      c.option '-n', '--name', 'Find the record by name instead of ID'
-      action(c, Commands::Clusters, method: :update)
-    end
+    #{
+    #  'node' => Commands::Nodes,
+    #  'group' => Commands::Groups
+    #}.each do |type, klass|
+    #  plural = type.pluralize
+    #  cluster_opt = ->(c, required: false, ids: nil) do
+    #    c.option '--cluster CLUSTER', <<~DESC.squish
+    #      #{'[REQUIED]' if required}
+    #      Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
+    #      within the CLUSTER
+    #    DESC
+    #  end
 
-    command 'clusters delete' do |c|
-      cli_syntax(c, 'ID')
-      c.summary = 'Permanently remove the cluster record'
-      c.option '-n', '--name', 'Find the record by name instead of ID'
-      action(c, Commands::Clusters, method: :delete)
-    end
+
+    #  command plural do |c|
+    #    cli_syntax(c)
+    #    c.sub_command_group = true
+    #    c.summary = "Manage the #{type} records"
+    #  end
+
+    #  command "#{plural} list" do |c|
+    #    cli_syntax(c)
+    #    c.summary = "List all the #{plural}"
+    #    action(c, klass, method: :list)
+    #  end
+
+    #  command "#{plural} show" do |c|
+    #    cli_syntax(c, 'ID')
+    #    c.summary = "Retreive the record for a single #{type}"
+    #    cluster_opt.call(c)
+    #    action(c, klass, method: :show)
+    #  end
+
+    #  command "#{plural} create" do |c|
+    #    cli_syntax(c, 'NAME [KEY=VALUE...]')
+    #    c.summary = "Create a new #{type} within a cluster"
+    #    cluster_opt.call(c, required: true)
+    #    action(c, klass, method: :create)
+    #  end
+
+    #  command "#{plural} delete" do |c|
+    #    cli_syntax(c, 'ID')
+    #    c.summary = "Permanently delete the #{type}"
+    #    cluster_opt.call(c)
+    #    action(c, klass, method: :delete)
+    #  end
+
+    #  case type
+    #  when 'node'
+    #    command "#{plural} update" do |c|
+    #      cli_syntax(c, 'ID KEY=VALUE...')
+    #      c.summary = "Modify the parameters for a #{type}"
+    #      cluster_opt.call(c)
+    #      action(c, klass, method: :update)
+    #    end
+    #  when 'group'
+    #    command "#{plural} update" do |c|
+    #      cli_syntax(c, 'GROUP_ID [key=value...]')
+    #      c.summary = "Modify group parameters and node membership"
+    #      cluster_opt.call(c, ids: "GROUP_ID, NODE_ID1, NODE_ID2, and etc")
+    #      c.option '--add-nodes NODE_ID1,NODE_ID2,..."',
+    #               'A comma seperated list of node IDs that will be assign to the group'
+    #      action(c, klass, method: :update)
+    #    end
+    #  end
+    #end
+
+    #command 'clusters' do |c|
+    #  cli_syntax(c)
+    #  c.summary = 'Manage the cluster resources'
+    #  c.sub_command_group = true
+    #end
+
+    #command 'clusters list' do |c|
+    #  cli_syntax(c)
+    #  c.summary = 'List all the clusters'
+    #  action(c, Commands::Clusters, method: :list)
+    #end
+
+    #command 'clusters show' do |c|
+    #  cli_syntax(c, 'ID')
+    #  c.summary = 'Retrieve a single cluster record'
+    #  c.option '-n', '--name', 'Find the record by name instead of ID'
+    #  action(c, Commands::Clusters, method: :show)
+    #end
+
+    #command 'clusters create' do |c|
+    #  cli_syntax(c, 'NAME [KEY=VALUE...]')
+    #  c.summary = 'Add a new cluster entry'
+    #  c.option '-n', '--name', 'noop'
+    #  action(c, Commands::Clusters, method: :create)
+    #end
+
+    #command 'clusters update' do |c|
+    #  cli_syntax(c, 'ID [KEY=VALUE...]')
+    #  c.summary = "Modify the parameters for an existing cluster"
+    #  c.option '-n', '--name', 'Find the record by name instead of ID'
+    #  action(c, Commands::Clusters, method: :update)
+    #end
+
+    #command 'clusters delete' do |c|
+    #  cli_syntax(c, 'ID')
+    #  c.summary = 'Permanently remove the cluster record'
+    #  c.option '-n', '--name', 'Find the record by name instead of ID'
+    #  action(c, Commands::Clusters, method: :delete)
+    #end
   end
 end
 
