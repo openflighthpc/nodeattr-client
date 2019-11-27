@@ -31,7 +31,10 @@ require 'commander'
 require 'nodeattr_client/errors'
 require 'nodeattr_client/records'
 
+require 'nodeattr_client/concerns/has_param_parser'
+
 require 'nodeattr_client/commands/nodes'
+require 'nodeattr_client/commands/clusters'
 
 module NodeattrClient
   VERSION = '0.0.1'
@@ -133,6 +136,45 @@ module NodeattrClient
       cli_syntax(c, 'ID')
       c.summary = 'Delete the node record'
       action(c, Commands::Nodes, method: :delete)
+    end
+
+    command 'clusters' do |c|
+      cli_syntax(c)
+      c.summary = 'Manage the cluster resources'
+      c.sub_command_group = true
+    end
+
+    command 'clusters list' do |c|
+      cli_syntax(c)
+      c.summary = 'List all the clusters'
+      action(c, Commands::Clusters, method: :list)
+    end
+
+    command 'clusters show' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Retrieve a single cluster record'
+      c.option '-n', '--name', 'Find the record by name instead of ID'
+      action(c, Commands::Clusters, method: :show)
+    end
+
+    command 'clusters create' do |c|
+      cli_syntax(c, 'NAME [KEY=VALUE...]')
+      c.summary = 'Add a new cluster entry'
+      action(c, Commands::Clusters, method: :create)
+    end
+
+    command 'clusters update' do |c|
+      cli_syntax(c, 'ID [KEY=VALUE...]')
+      c.summary = "Modify the parameters for an existing cluster"
+      c.option '-n', '--name', 'Find the record by name instead of ID'
+      action(c, Commands::Clusters, method: :update)
+    end
+
+    command 'clusters delete' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Permanently remove the cluster record'
+      c.option '-n', '--name', 'Find the record by name instead of ID'
+      action(c, Commands::Clusters, method: :delete)
     end
   end
 end

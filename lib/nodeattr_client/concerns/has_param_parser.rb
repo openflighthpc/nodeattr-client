@@ -28,49 +28,13 @@
 #===============================================================================
 
 module NodeattrClient
-  module Commands
-    class Nodes
-      include Concerns::HasParamParser
-
-      def list
-        node_str = Records::Node.includes(:cluster).all.map do |n|
-          "#{n.id}: #{n.cluster&.name}.#{n.name}"
-        end
-        puts node_str
-      end
-
-      def show(id, cluster: nil)
-        pp find(id, cluster)
-      end
-
-      def create(name, *params, cluster: nil)
-        raise InvalidInput, <<~ERROR.squish unless cluster
-          The '--cluster CLUSTER' flag must be specified on create
-        ERROR
-        node = Records::Node.create(
-          name: name,
-          level_params: parse_params(*params),
-          relationships: { cluster: Records::Cluster.new(id: ".#{cluster}") }
-        )
-        pp node
-      end
-
-      def update(id, *params, cluster: nil)
-        node = find(id, cluster)
-        node.update params: node.params.merge(parse_params(*params))
-        pp node
-      end
-
-      def delete(id, cluster: nil)
-        node = find(id, cluster)
-        pp node.destroy
-      end
-
-      private
-
-      def find(id_or_name, cluster)
-        id = cluster ? "#{cluster}.#{id_or_name}" : id_or_name
-        Records::Node.find(id).first
+  module Concerns
+    module HasParamParser
+      def parse_params(*params)
+        params.select { |p| p.include?('=') }
+              .map { |s| s.split('=', 2) }
+              .to_h
+              .symbolize_keys
       end
     end
   end

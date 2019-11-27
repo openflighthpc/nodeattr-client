@@ -29,48 +29,41 @@
 
 module NodeattrClient
   module Commands
-    class Nodes
+    class Clusters
       include Concerns::HasParamParser
 
       def list
-        node_str = Records::Node.includes(:cluster).all.map do |n|
-          "#{n.id}: #{n.cluster&.name}.#{n.name}"
+        cluster_strs = Records::Cluster.all.map do |c|
+          "#{c.id}: #{c.name}"
         end
-        puts node_str
+        puts cluster_strs
       end
 
-      def show(id, cluster: nil)
-        pp find(id, cluster)
+      def show(id_or_name, name: false)
+        pp find(id_or_name, name)
       end
 
-      def create(name, *params, cluster: nil)
-        raise InvalidInput, <<~ERROR.squish unless cluster
-          The '--cluster CLUSTER' flag must be specified on create
-        ERROR
-        node = Records::Node.create(
-          name: name,
-          level_params: parse_params(*params),
-          relationships: { cluster: Records::Cluster.new(id: ".#{cluster}") }
-        )
-        pp node
+      def create(name, *params)
+        cluster = Records::Cluster.create(name: name, level_params: parse_params(*params))
+        pp cluster
       end
 
-      def update(id, *params, cluster: nil)
-        node = find(id, cluster)
-        node.update params: node.params.merge(parse_params(*params))
-        pp node
+      def update(id_or_name, *params, name: false)
+        cluster = find(id_or_name, name)
+        cluster.update level_params: cluster.params.merge(parse_params(*params))
+        pp cluster
       end
 
-      def delete(id, cluster: nil)
-        node = find(id, cluster)
-        pp node.destroy
+      def delete(id_or_name, name: false)
+        cluster = find(id_or_name, name)
+        pp cluster.destroy
       end
 
       private
 
-      def find(id_or_name, cluster)
-        id = cluster ? "#{cluster}.#{id_or_name}" : id_or_name
-        Records::Node.find(id).first
+      def find(id_or_name, name)
+        id = name ? ".#{id_or_name}" : id_or_name
+        Records::Cluster.find(id).first
       end
     end
   end
