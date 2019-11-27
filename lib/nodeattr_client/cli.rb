@@ -174,6 +174,7 @@ module NodeattrClient
     command 'clusters create' do |c|
       cli_syntax(c, 'NAME [KEY=VALUE...]')
       c.summary = 'Add a new cluster entry'
+      c.option '-n', '--name', 'noop'
       action(c, Commands::Clusters, method: :create)
     end
 
