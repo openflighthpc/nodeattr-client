@@ -59,6 +59,11 @@ module NodeattrClient
         pp node
       end
 
+      def delete(id, cluster: nil)
+        node = find(id, cluster)
+        pp node.destroy
+      end
+
       private
 
       def find(id_or_name, cluster)

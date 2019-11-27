@@ -128,6 +128,12 @@ module NodeattrClient
                'Toggle the ID to be node name within the given cluster'
       action(c, Commands::Node, method: :update)
     end
+
+    command 'nodes delete' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Delete the node record'
+      action(c, Commands::Node, method: :delete)
+    end
   end
 end
 
