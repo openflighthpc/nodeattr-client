@@ -36,9 +36,14 @@ module NodeattrClient
       self.site = "http://localhost:8080"
     end
 
+    # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
+    # using `belongs_to` instead of has_one/has_many, for reasons ¯\_(ツ)_/¯
+    #
+    # This is only used for syntactic sugar and has no correlation to the data model!
+
     class Node < Base
       belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
-      has_many :groups, class_name: "#{module_parent}::Group"
+      belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
 
       property :name, type: :string
       property :params, type: :hash
@@ -46,14 +51,14 @@ module NodeattrClient
 
     class Group < Base
       belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
-      has_many :nodes, class_name: "#{module_parent}::Node"
+      belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
 
       property :name, type: :string
     end
 
     class Cluster < Base
-      has_many :nodes, class_name: "#{module_parent}::Node"
-      has_many :groups, class_name: "#{module_parent}::Group"
+      belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
+      belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
 
       property :name, type: :string
     end

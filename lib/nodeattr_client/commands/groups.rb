@@ -41,6 +41,14 @@ module NodeattrClient
         puts group_str
       end
 
+      def list_nodes(id_or_name, cluster: nil)
+        if cluster
+          Commands::Nodes.new.list(cluster: cluster, group: id_or_name)
+        else
+          Commands::Nodes.new.list(group: id_or_name)
+        end
+      end
+
       def show(id, cluster: nil)
         pp find(id, cluster)
       end

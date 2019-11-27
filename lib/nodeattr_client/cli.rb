@@ -191,6 +191,13 @@ module NodeattrClient
       action(c, Commands::Clusters, method: :list_nodes)
     end
 
+    command 'group list-nodes' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Return al the nodes withn the group'
+      CLUSTER_OPT.call(c)
+      action(c, Commands::Groups, method: :list_nodes)
+    end
+
     #  case type
     #  when 'node'
     #  when 'group'
