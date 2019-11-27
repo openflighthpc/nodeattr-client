@@ -37,22 +37,24 @@ module NodeattrClient
     end
 
     class Node < Base
+      belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
+      has_many :groups, class_name: "#{module_parent}::Group"
+
       property :name, type: :string
       property :params, type: :hash
     end
 
-    GroupNodesRelationship = Struct.new(:group) do
-    end
-
     class Group < Base
-      property :name, type: :string
+      belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
+      has_many :nodes, class_name: "#{module_parent}::Node"
 
-      def nodes_relationship
-        GroupNodesRelationship.new(self)
-      end
+      property :name, type: :string
     end
 
     class Cluster < Base
+      has_many :nodes, class_name: "#{module_parent}::Node"
+      has_many :groups, class_name: "#{module_parent}::Group"
+
       property :name, type: :string
     end
   end

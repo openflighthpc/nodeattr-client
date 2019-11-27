@@ -32,11 +32,20 @@ module NodeattrClient
     class Nodes
       include Concerns::HasParamParser
 
-      def list
-        node_str = Records::Node.includes(:cluster).all.map do |n|
-          "#{n.id}: #{n.cluster&.name}.#{n.name}"
+      def list(cluster: nil, cluster_id: nil)
+        records = if cluster || cluster_id
+                    id = (cluster ? ".#{cluster}" : cluster_id)
+                    cluster = Records::Cluster.includes(:nodes).find(id).first
+                    cluster.nodes.map { |n| [n, cluster] }
+                  else
+                    Records::Node.includes(:cluster).all.map do |node|
+                      [node, node.cluster]
+                    end
+                  end
+        nodes_str = records.map do |node, cluster|
+          "#{node.id}: #{cluster&.name}.#{node.name}"
         end
-        puts node_str
+        puts nodes_str
       end
 
       def show(id, cluster: nil)

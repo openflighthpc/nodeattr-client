@@ -116,29 +116,38 @@ module NodeattrClient
       c.sub_command_group = true
     end
 
+    NAME_OPT = ->(c) do
+      c.option '--name', <<~DESC.squish
+        Toggle the ID to be the cluster name
+      DESC
+    end
+
+    CLUSTER_OPT = ->(c, required: false, ids: nil) do
+      c.option '--cluster CLUSTER', <<~DESC.squish
+        #{'[REQUIED]' if required}
+        Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
+        within the CLUSTER
+      DESC
+    end
+
     {
       'node' => Commands::Nodes,
       'group' => Commands::Groups,
       'cluster' => Commands::Clusters
     }.each do |type, klass|
       plural = type.pluralize
-      cluster_opt = ->(c, required: false, ids: nil) do
+      cluster_opt = ->(c, **kwargs) do
         if type == 'cluster'
-          c.option '--name', <<~DESC.squish
-            Toggle the ID to be the cluster name
-          DESC
+          NAME_OPT.call(c)
         else
-          c.option '--cluster CLUSTER', <<~DESC.squish
-            #{'[REQUIED]' if required}
-            Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
-            within the CLUSTER
-          DESC
+          CLUSTER_OPT.call(c, **kwargs)
         end
       end
 
       command "#{type} list" do |c|
         cli_syntax(c)
         c.summary = "Return all the #{plural}"
+        CLUSTER_OPT.call(c) unless type == 'cluster'
         action(c, klass, method: :list)
       end
 
@@ -173,6 +182,13 @@ module NodeattrClient
         cluster_opt.call(c)
         action(c, klass, method: :delete)
       end
+    end
+
+    command 'cluster list-nodes' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Return all the nodes within the cluster'
+      NAME_OPT.call(c)
+      action(c, Commands::Clusters, method: :list_nodes)
     end
 
     #  case type

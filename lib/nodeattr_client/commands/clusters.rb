@@ -32,6 +32,14 @@ module NodeattrClient
     class Clusters
       include Concerns::HasParamParser
 
+      def list_nodes(id_or_name, name: false)
+        if name
+          Nodes.new.list(cluster: id_or_name)
+        else
+          Nodes.new.list(cluster_id: id_or_name)
+        end
+      end
+
       def list
         cluster_strs = Records::Cluster.all.map do |c|
           "#{c.id}: #{c.name}"
