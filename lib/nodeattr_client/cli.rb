@@ -103,10 +103,11 @@ module NodeattrClient
       'group' => Commands::Groups
     }.each do |type, klass|
       plural = type.pluralize
-      cluster_opt = ->(c, required = false) do
+      cluster_opt = ->(c, required: false, ids: nil) do
         c.option '--cluster CLUSTER', <<~DESC.squish
           #{'[REQUIED]' if required}
-          Toggle the ID to be name of the #{type} within the CLUSTER
+          Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
+          within the CLUSTER
         DESC
       end
 
@@ -133,15 +134,8 @@ module NodeattrClient
       command "#{plural} create" do |c|
         cli_syntax(c, 'NAME [KEY=VALUE...]')
         c.summary = "Create a new #{type} within a cluster"
-        cluster_opt.call(c, true)
+        cluster_opt.call(c, required: true)
         action(c, klass, method: :create)
-      end
-
-      command "#{plural} update" do |c|
-        cli_syntax(c, 'ID KEY=VALUE...')
-        c.summary = "Modify the parameters for a #{type}"
-        cluster_opt.call(c)
-        action(c, klass, method: :update)
       end
 
       command "#{plural} delete" do |c|
@@ -149,6 +143,25 @@ module NodeattrClient
         c.summary = "Permanently delete the #{type}"
         cluster_opt.call(c)
         action(c, klass, method: :delete)
+      end
+
+      case type
+      when 'node'
+        command "#{plural} update" do |c|
+          cli_syntax(c, 'ID KEY=VALUE...')
+          c.summary = "Modify the parameters for a #{type}"
+          cluster_opt.call(c)
+          action(c, klass, method: :update)
+        end
+      when 'group'
+        command "#{plural} update" do |c|
+          cli_syntax(c, 'GROUP_ID [key=value...]')
+          c.summary = "Modify group parameters and node membership"
+          cluster_opt.call(c, ids: "GROUP_ID, NODE_ID1, NODE_ID2, and etc")
+          c.option '--add-nodes NODE_ID1,NODE_ID2,..."',
+                   'A comma seperated list of node IDs that will be assign to the group'
+          action(c, klass, method: :update)
+        end
       end
     end
 

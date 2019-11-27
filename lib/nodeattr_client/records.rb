@@ -41,8 +41,15 @@ module NodeattrClient
       property :params, type: :hash
     end
 
+    GroupNodesRelationship = Struct.new(:group) do
+    end
+
     class Group < Base
       property :name, type: :string
+
+      def nodes_relationship
+        GroupNodesRelationship.new(self)
+      end
     end
 
     class Cluster < Base

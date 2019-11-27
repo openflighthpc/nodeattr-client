@@ -32,6 +32,8 @@ module NodeattrClient
     class Groups
       include Concerns::HasParamParser
 
+      UPDATE_FLAGS = [:add_nodes]
+
       def list
         group_str = Records::Group.includes(:cluster).all.map do |n|
           "#{n.id}: #{n.cluster&.name}.#{n.name}"
@@ -55,10 +57,7 @@ module NodeattrClient
         pp group
       end
 
-      def update(id, *params, cluster: nil)
-        group = find(id, cluster)
-        group.update params: group.params.merge(parse_params(*params))
-        pp group
+      def update(id, *params, cluster: nil, **opts)
       end
 
       def delete(id, cluster: nil)
@@ -71,6 +70,27 @@ module NodeattrClient
       def find(id_or_name, cluster)
         id = cluster ? "#{cluster}.#{id_or_name}" : id_or_name
         Records::Group.find(id).first
+      end
+
+      def node_rios(ids_or_names_str, cluster)
+        ids_or_names = ids_or_names_str.split(',')
+        ids = if cluster
+                ids_or_names.map { |n| "#{cluster}.#{n}" }
+              else
+                ids_or_names
+              end
+        ids.map { |id| { type: Node.type, id: id } }
+      end
+
+      def find_update_flag(opts)
+        flags = UPDATE_FLAGS.map { |f| opts[f] ? f : nil }.reject(&:nil?)
+        if flags.length > 1
+          raise InvalidInputs, <<~ERROR.squish
+            The following flags can not be used together: #{flags.join(' ')}
+          ERROR
+        else
+          flags.first
+        end
       end
     end
   end
