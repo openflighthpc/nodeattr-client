@@ -31,7 +31,7 @@ require 'commander'
 require 'nodeattr_client/errors'
 require 'nodeattr_client/records'
 
-require 'nodeattr_client/commands/node'
+require 'nodeattr_client/commands/nodes'
 
 module NodeattrClient
   VERSION = '0.0.1'
@@ -103,7 +103,7 @@ module NodeattrClient
     command 'nodes list' do |c|
       cli_syntax(c)
       c.summary = 'List all the nodes'
-      action(c, Commands::Node, method: :list)
+      action(c, Commands::Nodes, method: :list)
     end
 
     command 'nodes show' do |c|
@@ -111,14 +111,14 @@ module NodeattrClient
       c.summary = 'Retreive the record about a single node'
       c.option '--cluster CLUSTER',
                'Toggle the ID to be node name within the given cluster'
-      action(c, Commands::Node, method: :show)
+      action(c, Commands::Nodes, method: :show)
     end
 
     command 'nodes create' do |c|
       cli_syntax(c, 'NAME [KEY=VALUE...]')
       c.summary = 'Upload a new node entry'
       c.option '--cluster CLUSTER', 'Specify the cluster name'
-      action(c, Commands::Node, method: :create)
+      action(c, Commands::Nodes, method: :create)
     end
 
     command 'nodes update' do |c|
@@ -126,13 +126,13 @@ module NodeattrClient
       c.summary = 'Update the parameters for a node'
       c.option '--cluster CLUSTER',
                'Toggle the ID to be node name within the given cluster'
-      action(c, Commands::Node, method: :update)
+      action(c, Commands::Nodes, method: :update)
     end
 
     command 'nodes delete' do |c|
       cli_syntax(c, 'ID')
       c.summary = 'Delete the node record'
-      action(c, Commands::Node, method: :delete)
+      action(c, Commands::Nodes, method: :delete)
     end
   end
 end

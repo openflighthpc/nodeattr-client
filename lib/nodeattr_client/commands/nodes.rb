@@ -29,7 +29,7 @@
 
 module NodeattrClient
   module Commands
-    class Node
+    class Nodes
       def list
         node_str = Records::Node.includes(:cluster).all.map do |n|
           "#{n.id}: #{n.cluster&.name}.#{n.name}"
