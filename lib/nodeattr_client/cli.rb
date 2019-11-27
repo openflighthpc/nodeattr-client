@@ -34,6 +34,7 @@ require 'nodeattr_client/records'
 require 'nodeattr_client/concerns/has_param_parser'
 
 require 'nodeattr_client/commands/nodes'
+require 'nodeattr_client/commands/groups'
 require 'nodeattr_client/commands/clusters'
 
 module NodeattrClient
@@ -97,45 +98,58 @@ module NodeattrClient
       SYNTAX
     end
 
-    command 'nodes' do |c|
-      cli_syntax(c)
-      c.sub_command_group = true
-      c.summary = 'Manage the node resources'
-    end
+    {
+      'node' => Commands::Nodes,
+      'group' => Commands::Groups
+    }.each do |type, klass|
+      plural = type.pluralize
+      cluster_opt = ->(c, required = false) do
+        c.option '--cluster CLUSTER', <<~DESC.squish
+          #{'[REQUIED]' if required}
+          Toggle the ID to be name of the #{type} within the CLUSTER
+        DESC
+      end
 
-    command 'nodes list' do |c|
-      cli_syntax(c)
-      c.summary = 'List all the nodes'
-      action(c, Commands::Nodes, method: :list)
-    end
 
-    command 'nodes show' do |c|
-      cli_syntax(c, 'ID')
-      c.summary = 'Retreive the record about a single node'
-      c.option '--cluster CLUSTER',
-               'Toggle the ID to be node name within the given cluster'
-      action(c, Commands::Nodes, method: :show)
-    end
+      command plural do |c|
+        cli_syntax(c)
+        c.sub_command_group = true
+        c.summary = "Manage the #{type} records"
+      end
 
-    command 'nodes create' do |c|
-      cli_syntax(c, 'NAME [KEY=VALUE...]')
-      c.summary = 'Upload a new node entry'
-      c.option '--cluster CLUSTER', 'Specify the cluster name'
-      action(c, Commands::Nodes, method: :create)
-    end
+      command "#{plural} list" do |c|
+        cli_syntax(c)
+        c.summary = "List all the #{plural}"
+        action(c, klass, method: :list)
+      end
 
-    command 'nodes update' do |c|
-      cli_syntax(c, 'ID KEY=VALUE...')
-      c.summary = 'Update the parameters for a node'
-      c.option '--cluster CLUSTER',
-               'Toggle the ID to be node name within the given cluster'
-      action(c, Commands::Nodes, method: :update)
-    end
+      command "#{plural} show" do |c|
+        cli_syntax(c, 'ID')
+        c.summary = "Retreive the record for a single #{type}"
+        cluster_opt.call(c)
+        action(c, klass, method: :show)
+      end
 
-    command 'nodes delete' do |c|
-      cli_syntax(c, 'ID')
-      c.summary = 'Delete the node record'
-      action(c, Commands::Nodes, method: :delete)
+      command "#{plural} create" do |c|
+        cli_syntax(c, 'NAME [KEY=VALUE...]')
+        c.summary = "Create a new #{type} within a cluster"
+        cluster_opt.call(c, true)
+        action(c, klass, method: :create)
+      end
+
+      command "#{plural} update" do |c|
+        cli_syntax(c, 'ID KEY=VALUE...')
+        c.summary = "Modify the parameters for a #{type}"
+        cluster_opt.call(c)
+        action(c, klass, method: :update)
+      end
+
+      command "#{plural} delete" do |c|
+        cli_syntax(c, 'ID')
+        c.summary = "Permanently delete the #{type}"
+        cluster_opt.call(c)
+        action(c, klass, method: :delete)
+      end
     end
 
     command 'clusters' do |c|
