@@ -57,7 +57,10 @@ module NodeattrClient
         pp group
       end
 
-      def update(id, *params, cluster: nil, **opts)
+      def update(id, *params, cluster: nil)
+        group = find(id, cluster)
+        group.update params: group.params.merge(parse_params(*params))
+        pp group
       end
 
       def delete(id, cluster: nil)

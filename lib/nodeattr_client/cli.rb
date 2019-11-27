@@ -123,11 +123,17 @@ module NodeattrClient
     }.each do |type, klass|
       plural = type.pluralize
       cluster_opt = ->(c, required: false, ids: nil) do
-        c.option '--cluster CLUSTER', <<~DESC.squish
-          #{'[REQUIED]' if required}
-          Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
-          within the CLUSTER
-        DESC
+        if type == 'cluster'
+          c.option '--name', <<~DESC.squish
+            Toggle the ID to be the cluster name
+          DESC
+        else
+          c.option '--cluster CLUSTER', <<~DESC.squish
+            #{'[REQUIED]' if required}
+            Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
+            within the CLUSTER
+          DESC
+        end
       end
 
       command "#{type} list" do |c|
@@ -139,7 +145,7 @@ module NodeattrClient
       command "#{type} show" do |c|
         cli_syntax(c, 'ID')
         c.summary = "Retrieve a #{type} record and attributes"
-        cluster_opt.call(c) unless type == 'cluster'
+        cluster_opt.call(c)
         action(c, klass, method: :show)
       end
 
@@ -149,22 +155,22 @@ module NodeattrClient
           c.summary = 'Create a new cluster record'
         else
           c.summary = "Create a new #{type} within a cluster"
-          cluster_opt.call(c)
         end
+        cluster_opt.call(c)
         action(c, klass, method: :create)
       end
 
       command "#{type} update" do |c|
         cli_syntax(c, 'ID KEY=VALUE...')
         c.summary = "Modify the parameters for a #{type}"
-        cluster_opt.call(c) unless type == 'cluster'
+        cluster_opt.call(c)
         action(c, klass, method: :update)
       end
 
       command "#{type} delete" do |c|
         cli_syntax(c, 'ID')
         c.summary = "Permanently delete the #{type}"
-        cluster_opt.call(c) unless type == 'cluster'
+        cluster_opt.call(c)
         action(c, klass, method: :delete)
       end
     end
