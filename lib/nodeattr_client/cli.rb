@@ -28,6 +28,7 @@
 #===============================================================================
 
 require 'commander'
+require 'nodeattr_client/errors'
 require 'nodeattr_client/records'
 
 require 'nodeattr_client/commands/node'
@@ -96,7 +97,7 @@ module NodeattrClient
     command 'nodes' do |c|
       cli_syntax(c)
       c.sub_command_group = true
-      c.summary = 'Preform an action on multiple nodes'
+      c.summary = 'Manage the node resources'
     end
 
     command 'nodes list' do |c|
@@ -105,13 +106,7 @@ module NodeattrClient
       action(c, Commands::Node, method: :list)
     end
 
-    command 'node' do |c|
-      cli_syntax(c)
-      c.sub_command_group = true
-      c.summary = 'Preform an action on a single node'
-    end
-
-    command 'node show' do |c|
+    command 'nodes show' do |c|
       cli_syntax(c, 'ID')
       c.summary = 'Retreive the record about a single node'
       c.option '--cluster CLUSTER',
@@ -119,7 +114,14 @@ module NodeattrClient
       action(c, Commands::Node, method: :show)
     end
 
-    command 'node update' do |c|
+    command 'nodes create' do |c|
+      cli_syntax(c, 'NAME [KEY=VALUE...]')
+      c.summary = 'Upload a new node entry'
+      c.option '--cluster CLUSTER', 'Specify the cluster name'
+      action(c, Commands::Node, method: :create)
+    end
+
+    command 'nodes update' do |c|
       cli_syntax(c, 'ID KEY=VALUE...')
       c.summary = 'Update the parameters for a node'
       c.option '--cluster CLUSTER',
