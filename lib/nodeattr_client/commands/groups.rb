@@ -81,32 +81,41 @@ module NodeattrClient
         pp group.destroy
       end
 
+      def add_nodes(*a)
+        group_nodes_command(*a) do |group, nodes|
+          group.nodes_relationship.merge(*nodes)
+        end
+      end
+
+      def replace_nodes(*a)
+        group_nodes_command(*a) do |group, nodes|
+          group.nodes_relationship.replace(*nodes)
+        end
+      end
+
       private
 
-      def find(id_or_name, cluster)
-        id = cluster ? "#{cluster}.#{id_or_name}" : id_or_name
-        Records::Group.find(id).first
+      def group_nodes_command(id_or_name, *node_ids_or_names, cluster: false)
+        id = resolve_ids(id_or_name, cluster)
+        node_ids = resolve_ids(node_ids_or_names, cluster)
+        group = Records::Group.new(id: id)
+        nodes = node_ids.map { |i| Records::Node.new(id: i) }
+        yield(group, nodes)
+        pp group
       end
 
-      def node_rios(ids_or_names_str, cluster)
-        ids_or_names = ids_or_names_str.split(',')
-        ids = if cluster
-                ids_or_names.map { |n| "#{cluster}.#{n}" }
-              else
-                ids_or_names
-              end
-        ids.map { |id| { type: Node.type, id: id } }
-      end
-
-      def find_update_flag(opts)
-        flags = UPDATE_FLAGS.map { |f| opts[f] ? f : nil }.reject(&:nil?)
-        if flags.length > 1
-          raise InvalidInputs, <<~ERROR.squish
-            The following flags can not be used together: #{flags.join(' ')}
-          ERROR
+      def resolve_ids(ids_or_names, cluster)
+        if cluster
+          ids = Array.wrap(ids_or_names).map { |n| "#{cluster}.#{n}" }
+          ids_or_names.is_a?(Array) ? ids : ids.first
         else
-          flags.first
+          ids_or_names
         end
+      end
+
+      def find(id_or_name, cluster)
+        id = resolve_ids(id_or_name, cluster)
+        Records::Group.find(id).first
       end
     end
   end

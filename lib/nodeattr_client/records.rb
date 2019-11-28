@@ -49,11 +49,39 @@ module NodeattrClient
       property :params, type: :hash
     end
 
+    GroupNodesRelationship = Struct.new(:group) do
+      def merge(*nodes)
+        connection.run(:post, path, body: build_payload(*nodes))
+      end
+
+      def replace(*nodes)
+        connection.run(:patch, path, body: build_payload(*nodes))
+      end
+
+      private
+
+      def build_payload(*nodes)
+        { data: nodes.map(&:as_relation) }.to_json
+      end
+
+      def path
+        "/#{Group.type}/#{group.id}/relationships/#{Node.type}"
+      end
+
+      def connection
+        group.class.connection
+      end
+    end
+
     class Group < Base
       belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
       belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
 
       property :name, type: :string
+
+      def nodes_relationship
+        @nodes_relationship ||= GroupNodesRelationship.new(self)
+      end
     end
 
     class Cluster < Base

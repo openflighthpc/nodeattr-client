@@ -207,6 +207,20 @@ module NodeattrClient
       action(c, Commands::Nodes, method: :list_groups)
     end
 
+    command 'group add-nodes' do |c|
+      cli_syntax(c, 'GROUP_ID NODE_IDS...')
+      c.summary = 'Add nodes to the group'
+      CLUSTER_OPT.call(c, ids: 'GROUP_ID and NODE_IDS')
+      action(c, Commands::Groups, method: :add_nodes)
+    end
+
+    command 'group replace-nodes' do |c|
+      cli_syntax(c, 'GROUP_ID NODE_IDS...')
+      c.summary = 'Clear then replace all the nodes in the group'
+      CLUSTER_OPT.call(c, ids: 'GROUP_ID and NODE_IDS')
+      action(c, Commands::Groups, method: :replace_nodes)
+    end
+
     #  case type
     #  when 'node'
     #  when 'group'
