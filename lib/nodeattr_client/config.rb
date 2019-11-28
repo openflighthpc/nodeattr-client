@@ -58,7 +58,7 @@ module NodeattrClient
     include Hashie::Extensions::IgnoreUndeclared
 
     property :base_url
-    property :jwt_token
+    property :jwt_token, default: ''
     property :debug
 
     def debug?

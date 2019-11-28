@@ -36,6 +36,7 @@ module NodeattrClient
 
   class Base < JsonApiClient::Resource
     self.site = Config::Cache.base_url
+    self.connection.faraday.authorization :Bearer, Config::Cache.jwt_token
   end
 
   # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
