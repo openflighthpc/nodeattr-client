@@ -93,6 +93,17 @@ module NodeattrClient
         end
       end
 
+      def clear_nodes(id_or_name, cluster: false)
+        id = resolve_ids(id_or_name, cluster)
+        Records::Group.new(id: id).nodes_relationship.clear
+      end
+
+      def remove_nodes(*a)
+        group_nodes_command(*a) do |group, nodes|
+          group.nodes_relationship.subtract(*nodes)
+        end
+      end
+
       private
 
       def group_nodes_command(id_or_name, *node_ids_or_names, cluster: false)

@@ -221,6 +221,20 @@ module NodeattrClient
       action(c, Commands::Groups, method: :replace_nodes)
     end
 
+    command 'group clear-nodes' do |c|
+      cli_syntax(c, 'ID')
+      c.summary = 'Remove all nodes from the group'
+      CLUSTER_OPT.call(c)
+      action(c, Commands::Groups, method: :clear_nodes)
+    end
+
+    command 'group remove-nodes' do |c|
+      cli_syntax(c, 'GROUP_ID NODE_IDS...')
+      c.summary = 'Remove the nodes from the group'
+      CLUSTER_OPT.call(c, ids: 'GROUP_ID and NODE_IDS')
+      action(c, Commands::Groups, method: :remove_nodes)
+    end
+
     #  case type
     #  when 'node'
     #  when 'group'

@@ -58,6 +58,14 @@ module NodeattrClient
         connection.run(:patch, path, body: build_payload(*nodes))
       end
 
+      def clear
+        connection.run(:patch, path, body: { data: [] }.to_json)
+      end
+
+      def subtract(*nodes)
+        connection.run(:delete, path, body: build_payload(*nodes))
+      end
+
       private
 
       def build_payload(*nodes)
