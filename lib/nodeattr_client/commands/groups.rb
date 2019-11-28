@@ -40,6 +40,14 @@ module NodeattrClient
         ['Name',    ->(g) { g.name }]
       ]
 
+      SHOW_TABLE = [
+        ['ID',          ->(c) { c.id }],
+        ['Name',        ->(c) { c.name }],
+        ['Cluster',     ->(c) { c.cluster.name }],
+        ['Nodes',       ->(c) { c.nodes.map(&:name).join(',') }],
+        ['Parameters',  ->(c) { JSON.pretty_generate(c.params) }]
+      ]
+
       def list_nodes(id_or_name, cluster: nil)
         Commands::Nodes.new.list(cluster: cluster, group: id_or_name)
       end
@@ -57,8 +65,10 @@ module NodeattrClient
         puts render_table(LIST_TABLE, groups)
       end
 
-      def show(id, cluster: nil)
-        pp find(id, cluster)
+      def show(name_or_id, cluster: nil)
+        id = resolve_ids(name_or_id, cluster)
+        group = Records::Group.includes(:cluster, :nodes).find(id).first
+        puts render_table(SHOW_TABLE, group)
       end
 
       def create(name, *params, cluster: nil)

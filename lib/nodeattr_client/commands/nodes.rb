@@ -44,6 +44,7 @@ module NodeattrClient
         ['ID',          ->(c) { c.id }],
         ['Name',        ->(c) { c.name }],
         ['Cluster',     ->(c) { c.cluster.name }],
+        ['Groups',      ->(c) { c.groups.map(&:name).join(',') }],
         ['Parameters',  ->(c) { JSON.pretty_generate(c.params) }]
       ]
 
@@ -66,7 +67,7 @@ module NodeattrClient
 
       def show(name_or_id, cluster: nil)
         id = resolve_ids(name_or_id, cluster)
-        node = Records::Node.includes(:cluster).find(id).first
+        node = Records::Node.includes(:cluster, :groups).find(id).first
         puts render_table(SHOW_TABLE, node)
       end
 
