@@ -27,31 +27,43 @@
 # https://github.com/openflighthpc/nodeattr-client
 #===============================================================================
 
-task :setup do
-  $: << File.expand_path('lib', __dir__)
-  ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
+require 'yaml'
+require 'hashie'
 
-  require 'rubygems'
-  require 'bundler/setup'
+module NodeattrClient
+  class Config < Hashie::Dash
+    module Cache
+      class << self
+        def cache
+          @cache ||=  begin
+            if File.exists? path
+              Config.new(YAML.load(File.read(path), symbolize_names: true))
+            else
+              $stderr.puts <<~ERROR.chomp
+                ERROR: The configuration file does not exist: #{path}
+              ERROR
+              exit 1
+            end
+          end
+        end
 
-  require 'active_support/core_ext/string'
-  require 'active_support/core_ext/module'
-  require 'active_support/core_ext/module/delegation'
+        def path
+          File.expand_path('../../etc/config.yaml', __dir__)
+        end
 
-  require 'nodeattr_client/config'
+        delegate_missing_to :cache
+      end
+    end
 
-  if NodeattrClient::Config::Cache.debug?
-    # Redirect stderr to suppress IRB redefinition
-    old_stderr = $stderr
-    $stderr = StringIO.new
-    require 'pry'
-    require 'pry-byebug'
-    $stderr = old_stderr
+    include Hashie::Extensions::IgnoreUndeclared
+
+    property :base_url
+    property :jwt_token
+    property :debug
+
+    def debug?
+      debug ? true : false
+    end
   end
-end
-
-task console: :setup do
-  require 'nodeattr_client/cli'
-  binding.pry
 end
 

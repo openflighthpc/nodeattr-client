@@ -35,8 +35,7 @@ module NodeattrClient
   Records = NodeattrClient
 
   class Base < JsonApiClient::Resource
-    # TODO: Make this a config value
-    self.site = "http://localhost:8080"
+    self.site = Config::Cache.base_url
   end
 
   # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
