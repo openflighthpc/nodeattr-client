@@ -240,20 +240,6 @@ module NodeattrClient
       CLUSTER_OPT.call(c, ids: 'GROUP_ID and NODE_IDS')
       action(c, Commands::Groups, method: :remove_nodes)
     end
-
-    #  case type
-    #  when 'node'
-    #  when 'group'
-    #    command "#{plural} update" do |c|
-    #      cli_syntax(c, 'GROUP_ID [key=value...]')
-    #      c.summary = "Modify group parameters and node membership"
-    #      cluster_opt.call(c, ids: "GROUP_ID, NODE_ID1, NODE_ID2, and etc")
-    #      c.option '--add-nodes NODE_ID1,NODE_ID2,..."',
-    #               'A comma seperated list of node IDs that will be assign to the group'
-    #      action(c, klass, method: :update)
-    #    end
-    #  end
-    #end
   end
 end
 
