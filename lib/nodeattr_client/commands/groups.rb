@@ -41,11 +41,11 @@ module NodeattrClient
       ]
 
       SHOW_TABLE = [
-        ['ID',          ->(c) { c.id }],
-        ['Name',        ->(c) { c.name }],
-        ['Cluster',     ->(c) { c.cluster.name }],
-        ['Nodes',       ->(c) { c.nodes.map(&:name).join(',') }],
-        ['Parameters',  ->(c) { JSON.pretty_generate(c.params) }]
+        ['ID',          ->(g) { g.id }],
+        ['Name',        ->(g) { g.name }],
+        ['Cluster',     ->(g) { g.cluster.name }],
+        ['Nodes',       ->(g) { g.nodes.map(&:name).join(',') }],
+        ['Parameters',  ->(g) { JSON.pretty_generate(g.params) }]
       ]
 
       def list_nodes(id_or_name, cluster: nil)

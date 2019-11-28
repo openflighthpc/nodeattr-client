@@ -34,8 +34,16 @@ module NodeattrClient
       include Concerns::HasTableRenderer
 
       LIST_TABLE = [
-        ['ID', ->(c) { c.id }],
-        ['Name', ->(c) { c.name }]
+        ['ID',    ->(c) { c.id }],
+        ['Name',  ->(c) { c.name }]
+      ]
+
+      SHOW_TABLE = [
+        ['ID',          ->(c) { c.id }],
+        ['Name',        ->(c) { c.name }],
+        ['Groups',      ->(c) { c.groups.map(&:name).join(',') }],
+        ['Nodes',       ->(c) { c.nodes.map(&:name).join(',') }],
+        ['Parameters',  ->(c) { JSON.pretty_generate(c.params) }]
       ]
 
       def list_nodes(id_or_name, name: false)
@@ -60,13 +68,15 @@ module NodeattrClient
       end
 
       def show(id_or_name, name: false)
-        pp find(id_or_name, name)
+        id = resolve_id(id_or_name, name)
+        cluster = Records::Cluster.includes(:groups, :nodes).find(id).first
+        puts render_table(SHOW_TABLE, cluster)
       end
 
       def create(name_input, *params, name: nil)
         $stderr.puts <<~WARN.squish unless name
-          --name has not been specified. The input is being interpreted as the cluster name not
-          an ID. All other cluster commands use the cluster ID by default.
+          --name has not been specified. The input is being interpreted as the cluster name, not
+          the ID. All other cluster commands use the cluster ID by default.
         WARN
         cluster = Records::Cluster.create(name: name_input, level_params: parse_params(*params))
         pp cluster
@@ -85,8 +95,12 @@ module NodeattrClient
 
       private
 
+      def resolve_id(id_or_name, name)
+        name ? ".#{id_or_name}" : id_or_name
+      end
+
       def find(id_or_name, name)
-        id = name ? ".#{id_or_name}" : id_or_name
+        id = resolve_id(id_or_name, name)
         Records::Cluster.find(id).first
       end
     end
