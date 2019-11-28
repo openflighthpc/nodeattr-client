@@ -30,74 +30,76 @@
 require 'json_api_client'
 
 module NodeattrClient
-  module Records
-    class Base < JsonApiClient::Resource
-      # TODO: Make this a config value
-      self.site = "http://localhost:8080"
+  # Remove the 'Records' module to make refactoring the client into a library easier
+  # TODO: Remove references to 'Records' completely
+  Records = NodeattrClient
+
+  class Base < JsonApiClient::Resource
+    # TODO: Make this a config value
+    self.site = "http://localhost:8080"
+  end
+
+  # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
+  # using `belongs_to` instead of has_one/has_many, for reasons ¯\_(ツ)_/¯
+  #
+  # This is only used for syntactic sugar and has no correlation to the data model!
+
+  class Node < Base
+    belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
+    belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
+
+    property :name, type: :string
+    property :params, type: :hash
+  end
+
+  GroupNodesRelationship = Struct.new(:group) do
+    def merge(*nodes)
+      connection.run(:post, path, body: build_payload(*nodes))
     end
 
-    # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
-    # using `belongs_to` instead of has_one/has_many, for reasons ¯\_(ツ)_/¯
-    #
-    # This is only used for syntactic sugar and has no correlation to the data model!
-
-    class Node < Base
-      belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
-      belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
-
-      property :name, type: :string
-      property :params, type: :hash
+    def replace(*nodes)
+      connection.run(:patch, path, body: build_payload(*nodes))
     end
 
-    GroupNodesRelationship = Struct.new(:group) do
-      def merge(*nodes)
-        connection.run(:post, path, body: build_payload(*nodes))
-      end
-
-      def replace(*nodes)
-        connection.run(:patch, path, body: build_payload(*nodes))
-      end
-
-      def clear
-        connection.run(:patch, path, body: { data: [] }.to_json)
-      end
-
-      def subtract(*nodes)
-        connection.run(:delete, path, body: build_payload(*nodes))
-      end
-
-      private
-
-      def build_payload(*nodes)
-        { data: nodes.map(&:as_relation) }.to_json
-      end
-
-      def path
-        "/#{Group.type}/#{group.id}/relationships/#{Node.type}"
-      end
-
-      def connection
-        group.class.connection
-      end
+    def clear
+      connection.run(:patch, path, body: { data: [] }.to_json)
     end
 
-    class Group < Base
-      belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
-      belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
-
-      property :name, type: :string
-
-      def nodes_relationship
-        @nodes_relationship ||= GroupNodesRelationship.new(self)
-      end
+    def subtract(*nodes)
+      connection.run(:delete, path, body: build_payload(*nodes))
     end
 
-    class Cluster < Base
-      belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
-      belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
+    private
 
-      property :name, type: :string
+    def build_payload(*nodes)
+      { data: nodes.map(&:as_relation) }.to_json
     end
+
+    def path
+      "/#{Group.type}/#{group.id}/relationships/#{Node.type}"
+    end
+
+    def connection
+      group.class.connection
+    end
+  end
+
+  class Group < Base
+    belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
+    belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
+
+    property :name, type: :string
+
+    def nodes_relationship
+      @nodes_relationship ||= GroupNodesRelationship.new(self)
+    end
+  end
+
+  class Cluster < Base
+    belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
+    belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
+
+    property :name, type: :string
   end
 end
 
