@@ -32,24 +32,32 @@ module NodeattrClient
     class Nodes
       include Concerns::HasParamParser
 
+      LIST_TABLE = [
+        ['ID',      ->(n) { n.id }],
+        ['Cluster', ->(n) { n.cluster.name }],
+        ['Name',    ->(n) { n.name }]
+      ]
+
       def list_groups(id_or_name, cluster: nil)
         Commands::Groups.new.list(cluster: cluster, node: id_or_name)
       end
 
       def list(cluster: nil, cluster_id: nil, group: nil)
-        records = if group
-                    id = (cluster ? "#{cluster}.#{group}" : group)
-                    Records::Node.where(group_id: id).includes(:cluster).all
-                  elsif cluster || cluster_id
-                    id = (cluster ? ".#{cluster}" : cluster_id)
-                    Records::Node.where(cluster_id: id).includes(:cluster).all
-                  else
-                    Records::Node.includes(:cluster).all
-                  end
-        nodes_str = records.map do |node|
-          "#{node.id}: #{node.cluster&.name}.#{node.name}"
-        end
-        puts nodes_str
+        nodes = if group
+                  id = (cluster ? "#{cluster}.#{group}" : group)
+                  Records::Node.where(group_id: id).includes(:cluster).all
+                elsif cluster || cluster_id
+                  id = (cluster ? ".#{cluster}" : cluster_id)
+                  Records::Node.where(cluster_id: id).includes(:cluster).all
+                else
+                  Records::Node.includes(:cluster).all
+                end
+
+        headers = LIST_TABLE.map { |t| t[0] }
+        rows = nodes.map { |n| LIST_TABLE.map { |t| t[1].call(n) } }
+
+        table = TTY::Table.new headers, rows
+        puts table.render
       end
 
       def show(id, cluster: nil)

@@ -33,6 +33,8 @@ require 'nodeattr_client/records'
 
 require 'nodeattr_client/concerns/has_param_parser'
 
+require 'tty-table'
+
 require 'nodeattr_client/commands/nodes'
 require 'nodeattr_client/commands/groups'
 require 'nodeattr_client/commands/clusters'
