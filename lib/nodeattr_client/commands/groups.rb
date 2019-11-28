@@ -32,14 +32,18 @@ module NodeattrClient
     class Groups
       include Concerns::HasParamParser
 
-      UPDATE_FLAGS = [:add_nodes]
+      LIST_TABLE = [
+        ['ID',      ->(g) { g.id }],
+        ['Cluster', ->(g) { g.cluster.name }],
+        ['Name',    ->(g) { g.name }]
+      ]
 
       def list_nodes(id_or_name, cluster: nil)
         Commands::Nodes.new.list(cluster: cluster, group: id_or_name)
       end
 
       def list(cluster: nil, cluster_id: nil, node: nil)
-        records = if node
+        groups =  if node
                     id = (cluster ? "#{cluster}.#{node}" : node)
                     Records::Group.where(node_id: id).includes(:cluster).all
                   elsif cluster || cluster_id
@@ -48,10 +52,12 @@ module NodeattrClient
                   else
                     Records::Group.includes(:cluster).all
                   end
-        group_str = records.map do |group|
-          "#{group.id}: #{group.cluster&.name}.#{group.name}"
-        end
-        puts group_str
+
+        headers = LIST_TABLE.map { |t| t[0] }
+        rows = groups.map { |g| LIST_TABLE.map { |t| t[1].call(g) } }
+
+        table = TTY::Table.new headers, rows
+        puts table.render
       end
 
       def show(id, cluster: nil)
