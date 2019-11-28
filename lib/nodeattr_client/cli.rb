@@ -32,8 +32,7 @@ require 'nodeattr_client/errors'
 require 'nodeattr_client/records'
 
 require 'nodeattr_client/concerns/has_param_parser'
-
-require 'tty-table'
+require 'nodeattr_client/concerns/has_table_renderer'
 
 require 'nodeattr_client/commands/nodes'
 require 'nodeattr_client/commands/groups'

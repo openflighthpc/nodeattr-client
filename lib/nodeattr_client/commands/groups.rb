@@ -31,6 +31,7 @@ module NodeattrClient
   module Commands
     class Groups
       include Concerns::HasParamParser
+      include Concerns::HasTableRenderer
 
       LIST_TABLE = [
         ['ID',      ->(g) { g.id }],
@@ -52,12 +53,7 @@ module NodeattrClient
                   else
                     Records::Group.includes(:cluster).all
                   end
-
-        headers = LIST_TABLE.map { |t| t[0] }
-        rows = groups.map { |g| LIST_TABLE.map { |t| t[1].call(g) } }
-
-        table = TTY::Table.new headers, rows
-        puts table.render
+        puts render_table(LIST_TABLE, groups)
       end
 
       def show(id, cluster: nil)

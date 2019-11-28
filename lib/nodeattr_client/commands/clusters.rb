@@ -31,6 +31,12 @@ module NodeattrClient
   module Commands
     class Clusters
       include Concerns::HasParamParser
+      include Concerns::HasTableRenderer
+
+      LIST_TABLE = [
+        ['ID', ->(c) { c.id }],
+        ['Name', ->(c) { c.name }]
+      ]
 
       def list_nodes(id_or_name, name: false)
         if name
@@ -49,10 +55,8 @@ module NodeattrClient
       end
 
       def list
-        cluster_strs = Records::Cluster.all.map do |c|
-          "#{c.id}: #{c.name}"
-        end
-        puts cluster_strs
+        clusters = Records::Cluster.all
+        puts render_table(LIST_TABLE, clusters)
       end
 
       def show(id_or_name, name: false)
