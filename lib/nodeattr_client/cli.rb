@@ -33,6 +33,7 @@ require 'nodeattr_client/records'
 
 require 'nodeattr_client/concerns/has_param_parser'
 require 'nodeattr_client/concerns/has_table_renderer'
+require 'nodeattr_client/concerns/has_resolve_id_from_cluster'
 
 require 'nodeattr_client/commands/nodes'
 require 'nodeattr_client/commands/groups'

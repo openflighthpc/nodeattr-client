@@ -27,34 +27,17 @@
 # https://github.com/openflighthpc/nodeattr-client
 #===============================================================================
 
-require 'tty-table'
-
 module NodeattrClient
   module Concerns
-    module HasTableRenderer
-      def render_table(table_spec, entity_or_entities)
-        if entity_or_entities.is_a? Array
-          render_standard_table(table_spec, entity_or_entities)
+    module HasResolveIdFromCluster
+      def resolve_ids(ids_or_names, cluster)
+        if cluster
+          ids = Array.wrap(ids_or_names).map { |n| "#{cluster}.#{n}" }
+          ids_or_names.is_a?(Array) ? ids : ids.first
         else
-          render_show_table(table_spec, entity_or_entities)
+          ids_or_names
         end
-      end
-
-      private
-
-      def render_standard_table(table_spec, entities)
-        headers = table_spec.map { |t| t[0] }
-        rows = entities.map { |e| table_spec.map { |t| t[1].call(e) } }
-        table = TTY::Table.new headers, rows
-        table.render
-      end
-
-      def render_show_table(table_spec, entity)
-        data = table_spec.map { |t| [t[0], t[1].call(entity)] }
-        table = TTY::Table.new data
-        table.render multiline: true
       end
     end
   end
 end
-

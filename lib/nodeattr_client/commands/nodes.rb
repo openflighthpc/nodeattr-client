@@ -32,11 +32,19 @@ module NodeattrClient
     class Nodes
       include Concerns::HasParamParser
       include Concerns::HasTableRenderer
+      include Concerns::HasResolveIdFromCluster
 
       LIST_TABLE = [
         ['ID',      ->(n) { n.id }],
         ['Cluster', ->(n) { n.cluster.name }],
         ['Name',    ->(n) { n.name }]
+      ]
+
+      SHOW_TABLE = [
+        ['ID',          ->(c) { c.id }],
+        ['Name',        ->(c) { c.name }],
+        ['Cluster',     ->(c) { c.cluster.name }],
+        ['Parameters',  ->(c) { JSON.pretty_generate(c.params) }]
       ]
 
       def list_groups(id_or_name, cluster: nil)
@@ -56,8 +64,10 @@ module NodeattrClient
         puts render_table(LIST_TABLE, nodes)
       end
 
-      def show(id, cluster: nil)
-        pp find(id, cluster)
+      def show(name_or_id, cluster: nil)
+        id = resolve_ids(name_or_id, cluster)
+        node = Records::Node.includes(:cluster).find(id).first
+        puts render_table(SHOW_TABLE, node)
       end
 
       def create(name, *params, cluster: nil)
@@ -74,7 +84,7 @@ module NodeattrClient
 
       def update(id, *params, cluster: nil)
         node = find(id, cluster)
-        node.update params: node.params.merge(parse_params(*params))
+        node.update level_params: node.params.merge(parse_params(*params))
         pp node
       end
 

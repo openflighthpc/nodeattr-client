@@ -32,6 +32,7 @@ module NodeattrClient
     class Groups
       include Concerns::HasParamParser
       include Concerns::HasTableRenderer
+      include Concerns::HasResolveIdFromCluster
 
       LIST_TABLE = [
         ['ID',      ->(g) { g.id }],
@@ -115,15 +116,6 @@ module NodeattrClient
         nodes = node_ids.map { |i| Records::Node.new(id: i) }
         yield(group, nodes)
         pp group
-      end
-
-      def resolve_ids(ids_or_names, cluster)
-        if cluster
-          ids = Array.wrap(ids_or_names).map { |n| "#{cluster}.#{n}" }
-          ids_or_names.is_a?(Array) ? ids : ids.first
-        else
-          ids_or_names
-        end
       end
 
       def find(id_or_name, cluster)
