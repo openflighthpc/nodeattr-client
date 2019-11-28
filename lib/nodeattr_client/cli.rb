@@ -74,6 +74,8 @@ module NodeattrClient
           end
         rescue StandardError => e
           new_error_class = case e
+                            when JsonApiClient::Errors::NotFound
+                              nil
                             when JsonApiClient::Errors::ClientError
                               ClientError
                             when JsonApiClient::Errors::ServerError
@@ -81,11 +83,13 @@ module NodeattrClient
                             else
                               nil
                             end
-          if new_error_class && e.env.response_headers['content-type'] == 'application/vnd.api+json'
+          if new_error_class &&  e.env.response_headers['content-type'] == 'application/vnd.api+json'
             raise new_error_class, <<~MESSAGE.chomp
               #{e.message}
               #{e.env.body['errors'].map do |e| e['detail'] end.join("\n\n")}
             MESSAGE
+          elsif e.is_a? JsonApiClient::Errors::NotFound
+            raise ClientError, 'Resource Not Found'
           else
             raise e
           end
