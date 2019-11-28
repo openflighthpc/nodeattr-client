@@ -59,8 +59,12 @@ module NodeattrClient
         pp find(id_or_name, name)
       end
 
-      def create(name, *params)
-        cluster = Records::Cluster.create(name: name, level_params: parse_params(*params))
+      def create(name_input, *params, name: nil)
+        $stderr.puts <<~WARN.squish unless name
+          --name has not been specified. The input is being interpreted as the cluster name not
+          an ID. All other cluster commands use the cluster ID by default.
+        WARN
+        cluster = Records::Cluster.create(name: name_input, level_params: parse_params(*params))
         pp cluster
       end
 

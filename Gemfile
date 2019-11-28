@@ -35,6 +35,7 @@ gem 'activesupport'
 gem 'commander-openflighthpc'
 gem 'json_api_client'
 gem 'hashie'
+gem 'rake'
 gem 'tty-table'
 
 group :development do

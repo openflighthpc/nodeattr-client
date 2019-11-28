@@ -112,7 +112,7 @@ module NodeattrClient
 
     command 'node' do |c|
       cli_syntax(c)
-      c.summary = 'View, modify or delete a node'
+      c.summary = 'View, modify or delete a node record'
       c.sub_command_group = true
     end
 
@@ -122,9 +122,8 @@ module NodeattrClient
       DESC
     end
 
-    CLUSTER_OPT = ->(c, required: false, ids: nil) do
+    CLUSTER_OPT = ->(c, ids: nil) do
       c.option '--cluster CLUSTER', <<~DESC.squish
-        #{'[REQUIED]' if required}
         Toggle the #{ids || 'ID'} to be #{ids ? 'names' : 'the name'}
         within the CLUSTER
       DESC
@@ -162,10 +161,11 @@ module NodeattrClient
         cli_syntax(c, 'NAME [KEY=VALUE...]')
         if type == 'cluster'
           c.summary = 'Create a new cluster record'
+          c.option '--name', '[REQUIRED] Specify the name of the cluster'
         else
           c.summary = "Create a new #{type} within a cluster"
+          c.option '--cluster CLUSTER', "[REQUIRED] Specify the cluster for the #{type}"
         end
-        cluster_opt.call(c)
         action(c, klass, method: :create)
       end
 
