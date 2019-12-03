@@ -151,8 +151,6 @@ $ bin/flightattr node show --cluster foo gpu01
 $ bin/flightattr node show <gpu01-id>
 ```
 
-### Node
-
 # Contributing
 
 Fork the project. Make your feature addition or bug fix. Send a pull
