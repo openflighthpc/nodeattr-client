@@ -82,7 +82,7 @@ module NodeattrClient
         )
       end
 
-      def update(id, *params, cluster: nil)
+      def update(name_or_id, *params, cluster: nil)
         id = resolve_ids(name_or_id, cluster)
         node = Records::Node.find(id).first
         node.update level_params: node.params.merge(parse_params(*params))
