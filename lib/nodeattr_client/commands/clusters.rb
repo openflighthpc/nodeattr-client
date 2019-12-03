@@ -83,8 +83,9 @@ module NodeattrClient
 
       def update(id_or_name, *params, name: false)
         id = resolve_id(id_or_name, name)
-        cluster = Records::Cluster.find(id).first
-        cluster.update level_params: cluster.params.merge(parse_params(*params))
+        Records::Cluster.new(id: id)
+                        .tap(&:mark_as_persisted!)
+                        .update level_params: parse_params(*params)
       end
 
       def delete(id_or_name, name: false)
