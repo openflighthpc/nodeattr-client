@@ -40,7 +40,7 @@ require 'nodeattr_client/commands/groups'
 require 'nodeattr_client/commands/clusters'
 
 module NodeattrClient
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
 
   class CLI
     extend Commander::Delegates
