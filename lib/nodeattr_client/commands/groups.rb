@@ -76,12 +76,13 @@ module NodeattrClient
         raise InvalidInput, <<~ERROR.squish unless cluster
           The '--cluster CLUSTER' flag must be specified on create
         ERROR
-        Records::Group.create(
+        g = Records::Group.create(
           name: name,
           priority: priority,
           level_params: parse_params(*params),
           relationships: { cluster: Records::Cluster.new(id: ".#{cluster}") }
         )
+        puts g.id
       end
 
       def update(name_or_id, *params, cluster: nil, priority: nil)

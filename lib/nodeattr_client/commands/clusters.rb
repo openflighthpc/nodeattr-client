@@ -78,7 +78,8 @@ module NodeattrClient
           --name has not been specified. The input is being interpreted as the cluster name, not
           the ID. All other cluster commands use the cluster ID by default.
         WARN
-        Records::Cluster.create(name: name_input, level_params: parse_params(*params))
+        c = Records::Cluster.create(name: name_input, level_params: parse_params(*params))
+        puts c.id
       end
 
       def update(id_or_name, *params, name: false)
