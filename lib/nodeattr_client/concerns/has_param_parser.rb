@@ -31,10 +31,14 @@ module NodeattrClient
   module Concerns
     module HasParamParser
       def parse_params(*params)
-        params.select { |p| p.include?('=') }
-              .map { |s| s.split('=', 2) }
-              .to_h
-              .symbolize_keys
+        merge_params = params.select { |p| p.include?('=') }
+                             .map { |s| s.split('=', 2) }
+                             .to_h
+                             .symbolize_keys
+        delete_params = params.select { |p| p.last == '!' }
+                              .map { |p| [p[0..-2].to_sym, nil] }
+                              .to_h
+        merge_params.merge(delete_params)
       end
     end
   end

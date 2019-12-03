@@ -35,7 +35,121 @@ vi etc/config.yaml
 ```
 
 ## Basic Usage
+The following are the steps for creating a basic cluster containing nodes and gpus:
 
+### Cluster Configuration
+
+The following commands will create and display the cluster `foo`:
+
+```
+# Create the new cluster
+$ bin/flightattr cluster create --name foo
+
+# Find the cluster ID
+$ bin/flightattr cluster list
+ID        Name
+<foo-id>  foo
+
+# Display the cluster details by name
+$ bin/flightattr cluster show --name foo
+
+# Equivalent to
+$ bin/flightattr cluster show <foo-id>
+```
+
+The default parameters for the cluster are set directly on the cluster. This can be done on `create` above or later using the `update` command:
+
+```
+# Sets the demo default settings for the parameter engine
+$ bin/flightattr cluster update --name foo key_cluster=cluster key_nodes=cluster key_gpus=cluster key_node01=cluster key_gpu01=cluster
+
+# Equivalent to:
+$ bin/flightattr cluster update <foo-id> key_cluster=...(as above)...
+```
+
+### Group Configuration
+
+Groups are used to identify collections of nodes and provide greater granularity to the parameter engine. This can be done via the two step `create`/`update` process or within a single `create`:
+
+```
+# Create a group using the two step method:
+$ bin/flightattr group create --cluster foo nodes
+$ bin/flightattr group update --cluster foo nodes key_nodes=nodes key_node01=nodes
+
+# Equivalent to:
+$ bin/flightattr group update <nodes-id> key_nodes=...(as above)...
+
+# Create a group in a single step
+# NOTE: A cluster can be created in the same manner
+$ bin/flightattr group create --cluster foo gpus key_gpus=gpus key_gpu01=gpus
+```
+
+The following will list the groups and show the results from the parameter engine:
+
+```
+# List the groups
+$ bin/flightattr group list
+
+# Limit the list to the foo cluster
+$ bin/flightattr group list --cluster foo
+
+# View the nodes group by name
+$ bin/flightattr group show --cluster foo nodes
+
+# Equivalent to:
+$ bin/flightattr group show <nodes-id>
+```
+
+### Node Configuration
+
+Finally the nodes can be created and placed into the groups. This can be done via a two step `create`/`add-nodes` or three step `create`/`update`/`add-nodes` process.
+
+```
+# Create the nodes with parameters in a single step
+$ bin/flightattr node create --cluster foo node01 key_node01=node01
+$ bin/flightattr node create --cluster foo node02
+$ bin/flightattr node create --cluster foo gpu02
+
+# Create a node and update it with parameters
+$ bin/flightattr node create --cluster foo gpu01
+$ bin/flightattr node update --cluster foo gpu01 key_gpu01=gpu01
+
+# Equivalent to:
+$ bin/flightattr node update <gpu01-id> key_gpu01=...(as above)...
+
+# Add the nodes to there respective groups
+$ bin/flightattr group add-nodes --cluster foo nodes node01 node02
+$ bin/flightattr group add-nodes --cluster foo gpus gpu01 gpu02
+
+# Equivalent to:
+$ bin/flightattr group add-nodes <nodes-id> <node01-id> <node02-id>
+$ bin/flightattr group add-ndoes <gpus-id> <gpu01-id> <gpu02-id>
+```
+
+The following can be used to view the nodes and parameters:
+
+```
+# List all the nodes
+$ bin/flightattr node list
+
+# List all the nodes within the foo cluster (and equivalents):
+$ bin/flightattr node list --cluster foo
+$ bin/flightattr cluster list-nodes --name foo
+$ bin/flightattr cluster list-nodes <foo-id>
+
+# List all the nodes within a group (and equivalent):
+# NOTE: Each group is cluster specific, it not possible to list nodes with the same group name across clusters
+$ bin/flightattr group list-nodes --cluster foo nodes
+$ bin/flightattr group list-nodes <nodes-id>
+
+# List all the groups that a node is part of (and equivalent)
+$ bin/flightattr node list-groups --cluster foo node01
+$ bin/flightattr node list-groups <node01-id>
+
+# Show the details about a node (and equivalent)
+$ bin/flightattr node show --cluster foo gpu01
+$ bin/flightattr node show <gpu01-id>
+```
 
 # Contributing
 
