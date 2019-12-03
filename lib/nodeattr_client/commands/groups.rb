@@ -44,6 +44,7 @@ module NodeattrClient
         ['ID',          ->(g) { g.id }],
         ['Name',        ->(g) { g.name }],
         ['Cluster',     ->(g) { g.cluster.name }],
+        ['Priority',    ->(g) { g.priority }],
         ['Nodes',       ->(g) { g.nodes.map(&:name).join(',') }],
         ['Parameters',  ->(g) { JSON.pretty_generate(g.params) }]
       ]
@@ -71,22 +72,26 @@ module NodeattrClient
         puts render_table(SHOW_TABLE, group)
       end
 
-      def create(name, *params, cluster: nil)
+      def create(name, *params, cluster: nil, priority: nil)
         raise InvalidInput, <<~ERROR.squish unless cluster
           The '--cluster CLUSTER' flag must be specified on create
         ERROR
         Records::Group.create(
           name: name,
+          priority: priority,
           level_params: parse_params(*params),
           relationships: { cluster: Records::Cluster.new(id: ".#{cluster}") }
         )
       end
 
-      def update(name_or_id, *params, cluster: nil)
+      def update(name_or_id, *params, cluster: nil, priority: nil)
         id = resolve_ids(name_or_id, cluster)
+        update_attributes = { level_params: parse_params(*params) }.tap do |h|
+          h[:priority] = priority if priority
+        end
         Records::Group.new(id: id)
                       .tap(&:mark_as_persisted!)
-                      .update leval_params: parse_params(*params)
+                      .update update_attributes
       end
 
       def delete(name_or_id, cluster: nil)

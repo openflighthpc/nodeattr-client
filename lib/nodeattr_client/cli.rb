@@ -135,6 +135,11 @@ module NodeattrClient
       DESC
     end
 
+    PRIORITY_OPT = ->(c) do
+      c.option '--priority INTERGER',
+               'Set the order the group parameters are merged. The lower priority is merged last'
+    end
+
     {
       'node' => Commands::Nodes,
       'group' => Commands::Groups,
@@ -172,17 +177,19 @@ module NodeattrClient
           c.summary = "Create a new #{type} within a cluster"
           c.option '--cluster CLUSTER', "[REQUIRED] Specify the cluster for the #{type}"
         end
+        PRIORITY_OPT.call(c) if type == 'group'
         action(c, klass, method: :create)
       end
 
       command "#{type} update" do |c|
-        cli_syntax(c, 'ID <KEY=VALUE|KEY!>...')
+        cli_syntax(c, 'ID [KEY=VALUE|KEY!...]')
         c.summary = "Modify the parameters for a #{type}"
         c.description = <<~DESC
           The KEY=VALUE will set KEY to VALUE at the #{type} level. Keys can be deleted using the KEY!
           Note the KEY must be alphanumeric but may include hyphens or underscores.
         DESC
         cluster_opt.call(c)
+        PRIORITY_OPT.call(c) if type == 'group'
         action(c, klass, method: :update)
       end
 
