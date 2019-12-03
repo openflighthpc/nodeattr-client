@@ -176,8 +176,12 @@ module NodeattrClient
       end
 
       command "#{type} update" do |c|
-        cli_syntax(c, 'ID KEY=VALUE...')
+        cli_syntax(c, 'ID <KEY=VALUE|KEY!>...')
         c.summary = "Modify the parameters for a #{type}"
+        c.description = <<~DESC
+          The KEY=VALUE will set KEY to VALUE at the #{type} level. Keys can be deleted using the KEY!
+          Note the KEY must be alphanumeric but may include hyphens or underscores.
+        DESC
         cluster_opt.call(c)
         action(c, klass, method: :update)
       end
