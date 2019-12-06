@@ -38,9 +38,10 @@ require 'nodeattr_client/concerns/has_resolve_id_from_cluster'
 require 'nodeattr_client/commands/nodes'
 require 'nodeattr_client/commands/groups'
 require 'nodeattr_client/commands/clusters'
+require 'nodeattr_client/commands/list_cascades'
 
 module NodeattrClient
-  VERSION = '0.1.2'
+  VERSION = '0.1.3'
 
   class CLI
     extend Commander::Delegates
@@ -197,6 +198,13 @@ module NodeattrClient
         c.summary = "Permanently delete the #{type}"
         cluster_opt.call(c)
         action(c, klass, method: :delete)
+      end
+
+      command "#{type} list-cascades" do |c|
+        cli_syntax(c, 'ID')
+        c.summary = 'Return the resources that determine the cascading parameters'
+        cluster_opt.call(c)
+        action(c, Commands::ListCascades, method: type.to_sym)
       end
     end
 

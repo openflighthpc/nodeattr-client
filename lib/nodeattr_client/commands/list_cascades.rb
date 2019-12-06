@@ -28,13 +28,45 @@
 #===============================================================================
 
 module NodeattrClient
-  class BaseError < StandardError; end
-  class InvalidInput < BaseError; end
-  class InternalClientError < BaseError
-    MSG = 'An unexpected error has occurred locally!'
+  module Commands
+    class ListCascades
+      include Concerns::HasTableRenderer
+      include Concerns::HasResolveIdFromCluster
+
+      LIST_TABLE = [
+        ['ID',      ->(r) { r.id }],
+        ['Cluster', ->(r) { r.is_a?(Cluster) ? r.name : r.cluster.name }],
+        ['Name',    ->(r) { r.name }],
+        ['Type',    ->(r) { r.class.type.singularize }]
+      ]
+
+      def node(id_or_name, cluster: nil)
+        id = resolve_ids(id_or_name, cluster)
+        models = Cascades.includes(:cluster).where(node_id: id).all
+        list_cascades(models)
+      end
+
+      def group(id_or_name, cluster: nil)
+        id = resolve_ids(id_or_name, cluster)
+        models = Cascades.includes(:cluster).where(group_id: id).all
+        list_cascades(models)
+      end
+
+      def cluster(id_or_name, name: false)
+        id = resolve_cluster_id(id_or_name, name)
+        models = Cascades.where(cluster_id: id).all
+        list_cascades(models)
+      end
+
+      private
+
+      def list_cascades(models)
+        puts render_table(LIST_TABLE, models)
+      end
+
+      def resolve_cluster_id(id_or_name, name)
+        name ? ".#{id_or_name}" : id_or_name
+      end
+    end
   end
-
-  class ClientError < BaseError; end
-  class InternalServerError < BaseError; end
 end
-

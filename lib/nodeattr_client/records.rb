@@ -37,6 +37,16 @@ module NodeattrClient
   class Base < JsonApiClient::Resource
     self.site = Config::Cache.base_url
     self.connection.faraday.authorization :Bearer, Config::Cache.jwt_token
+
+    # Fix a bug where multiple `belongs_to` will start interacting with each other
+    # and royally mangle the path. `nil` sections of the path need to be rejected first
+    def self._set_prefix_path(attrs)
+      paths = _belongs_to_associations.map do |a|
+        a.set_prefix_path(attrs, route_formatter)
+      end
+
+      paths.reject(&:nil?).join("/")
+    end
   end
 
   # NOTE: JsonApiClient::Resource implements a bunch of relationship functionality
@@ -100,6 +110,25 @@ module NodeattrClient
     belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
 
     property :name, type: :string
+  end
+
+  class Cascades < Base
+    belongs_to :node, class_name: "#{module_parent}::Node", shallow_path: true
+    belongs_to :group, class_name: "#{module_parent}::Group", shallow_path: true
+    belongs_to :cluster, class_name: "#{module_parent}::Cluster", shallow_path: true
+
+    def self.new(data)
+      case data['type']
+      when 'clusters'
+        Cluster.new(data)
+      when 'groups'
+        Group.new(data)
+      when 'nodes'
+        Node.new(data)
+      else
+        raise InternalClientError
+      end
+    end
   end
 end
 
