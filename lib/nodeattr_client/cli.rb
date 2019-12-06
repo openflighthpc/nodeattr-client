@@ -40,7 +40,7 @@ require 'nodeattr_client/commands/groups'
 require 'nodeattr_client/commands/clusters'
 
 module NodeattrClient
-  VERSION = '0.1.1'
+  VERSION = '0.1.2'
 
   class CLI
     extend Commander::Delegates
@@ -154,10 +154,9 @@ module NodeattrClient
         end
       end
 
-      command "#{type} list" do |c|
+      command "list-#{plural}" do |c|
         cli_syntax(c)
         c.summary = "Return all the #{plural}"
-        CLUSTER_OPT.call(c) unless type == 'cluster'
         action(c, klass, method: :list)
       end
 
