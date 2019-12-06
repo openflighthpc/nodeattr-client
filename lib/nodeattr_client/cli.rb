@@ -41,7 +41,7 @@ require 'nodeattr_client/commands/clusters'
 require 'nodeattr_client/commands/list_cascades'
 
 module NodeattrClient
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
 
   class CLI
     extend Commander::Delegates
