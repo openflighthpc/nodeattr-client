@@ -46,7 +46,7 @@ The following commands will create and display the cluster `foo`:
 $ bin/flightattr cluster create --name foo
 
 # Find the cluster ID
-$ bin/flightattr cluster list
+$ bin/flightattr list-clusters
 ID        Name
 <foo-id>  foo
 
@@ -88,10 +88,13 @@ The following will list the groups and show the results from the parameter engin
 
 ```
 # List the groups
-$ bin/flightattr group list
+$ bin/flightattr list-groups
 
 # Limit the list to the foo cluster
-$ bin/flightattr group list --cluster foo
+$ bin/flightattr cluster list-groups --name foo
+
+# Equivalent to:
+$ bin/flightattr cluster list-groups <foo-id>
 
 # View the nodes group by name
 $ bin/flightattr group show --cluster foo nodes
@@ -130,10 +133,9 @@ The following can be used to view the nodes and parameters:
 
 ```
 # List all the nodes
-$ bin/flightattr node list
+$ bin/flightattr list-nodes
 
 # List all the nodes within the foo cluster (and equivalents):
-$ bin/flightattr node list --cluster foo
 $ bin/flightattr cluster list-nodes --name foo
 $ bin/flightattr cluster list-nodes <foo-id>
 
