@@ -35,20 +35,19 @@ module NodeattrClient
 
       LIST_TABLE = [
         ['ID',      ->(r) { r.id }],
-        ['Cluster', ->(r) { r.is_a?(Cluster) ? r.name : r.cluster.name }],
+        ['Type',    ->(r) { r.class.type.singularize }],
         ['Name',    ->(r) { r.name }],
-        ['Type',    ->(r) { r.class.type.singularize }]
       ]
 
       def node(id_or_name, cluster: nil)
         id = resolve_ids(id_or_name, cluster)
-        models = Cascades.includes(:cluster).where(node_id: id).all
+        models = Cascades.where(node_id: id).all
         list_cascades(models)
       end
 
       def group(id_or_name, cluster: nil)
         id = resolve_ids(id_or_name, cluster)
-        models = Cascades.includes(:cluster).where(group_id: id).all
+        models = Cascades.where(group_id: id).all
         list_cascades(models)
       end
 
